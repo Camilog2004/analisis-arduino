@@ -208,7 +208,9 @@ summary(intervalos_camilo)
 
 ```
 
-Se analizaron los intervalos entre mediciones de los sensores utilizados por Mafe, Jaider y Camilo. El sensor de **Mafe** presentó la mayor frecuencia de muestreo, con una mediana de `11 ms` y una media de `~30 ms`, lo que indica una captura densa y estable. **Jaider** mostró una mediana de `20 ms` y media de `~45 ms`, con mayor variabilidad. En contraste, **Camilo** tuvo la menor frecuencia y mayor inestabilidad, con una mediana de `33 ms` y una media de `~85 ms`. Estas diferencias afectan la precisión temporal de los datos, siendo los de Mafe los más adecuados para detectar cambios rápidos en la aceleración. \# Propuestas para identificar patrones
+Se analizaron los intervalos entre mediciones de los sensores utilizados por Mafe, Jaider y Camilo. El sensor de **Mafe** presentó la mayor frecuencia de muestreo, con una mediana de `11 ms` y una media de `~30 ms`, lo que indica una captura densa y estable. **Jaider** mostró una mediana de `20 ms` y media de `~45 ms`, con mayor variabilidad. En contraste, **Camilo** tuvo la menor frecuencia y mayor inestabilidad, con una mediana de `33 ms` y una media de `~85 ms`. Estas diferencias afectan la precisión temporal de los datos, siendo los de Mafe los más adecuados para detectar cambios rápidos en la aceleración. \
+
+# Propuestas para identificar patrones
 
 -   **Análisis de la varianza o desviación estándar**\
     Se puede calcular la varianza o la desviación estándar de las aceleraciones en cada eje. Por ejemplo, la bicicleta puede tener una aceleración más variable debido a vibraciones constantes, mientras que el metro podría tener una aceleración más estable durante el trayecto.
@@ -325,13 +327,13 @@ estadBici <- datosBici |> summarise(
 kable(estadBici, caption = "Estadísticas para el trayecto en Bicicleta")
 ```
 
-La **bicicleta** tiene la mayor desviación en la aceleración total (1.57), lo cual refleja una experiencia de movimiento menos uniforme: influencias como los pedaleos, el terreno, y el control manual generan esa variabilidad general, aunque sus movimientos por eje son relativamente estables.
+La bicicleta presenta la mayor desviación en la aceleración total (1.77), lo que refleja un movimiento menos uniforme y más variable. Aunque su aceleración en el eje X es muy alta (8.39), característica del pedaleo constante hacia adelante, el eje Z tiene una aceleración promedio negativa (-4.11), lo cual puede asociarse a impactos verticales o desniveles del terreno. Esta combinación indica una experiencia de trayecto más inestable y dinámica.
 
-El **metro** muestra una alta variación en el eje Y (6.68), lo que puede deberse a cambios rápidos en dirección o velocidad, como frenadas o giros, aunque su aceleración total es muy estable (desviación de 0.53), indicando que esas variaciones no afectan el recorrido de forma global.
+El metro muestra una alta variación en el eje Y (6.73), acompañado de una media negativa (-0.82), lo cual podría deberse a frenadas, curvas o movimientos laterales bruscos. Sin embargo, su aceleración total es muy estable (desviación de 0.56), lo que indica que, a pesar de los cambios en la dirección, el trayecto mantiene cierta regularidad general.
 
-El **bus** presenta una alta variabilidad también, especialmente en el eje Y (5.45) y Z (4.65), con una aceleración lateral negativa marcada (-4.46), posiblemente debido a curvas, baches o el tráfico urbano. Su aceleración total también es estable (0.53), pero con más fluctuación que la Línea O.
+El bus también presenta una gran variabilidad, especialmente en el eje Y (5.56), con una aceleración lateral negativa marcada (-4.07), lo cual es consistente con frenadas o curvas en entornos urbanos. Además, el eje Z tiene una desviación alta (4.77), posiblemente por vibraciones o baches en la vía. Su aceleración total (0.63) es un poco más inestable que la del metro o la Línea O.
 
-La **Línea O** mantiene un patrón muy uniforme: sus desviaciones por eje y en la aceleración total (0.53) están entre las más bajas, lo que sugiere un trayecto controlado y estable. A pesar de tener aceleraciones más altas en los tres ejes, la variabilidad es menor, indicando un movimiento continuo y sin sobresaltos.
+La Línea O mantiene un patrón más uniforme en general. Aunque tiene valores de aceleración más altos en los tres ejes, sus desviaciones son moderadas, y la aceleración total es la más estable de todas (0.51). Esto sugiere un movimiento fluido, continuo y controlado, típico de sistemas guiados como tranvías o monorrieles, con menos influencia de factores externos como el tráfico o las irregularidades del terreno.
 
 ```{r}
 n_camilo <- nrow(comparacion_camilo)
