@@ -29,6 +29,7 @@ comparacion_camilo <- read.csv("comparacion-camilo.csv")
 comparacion_jaider <- read.csv("comparacion-jaider.csv")
 trayecto_mafe <- read.csv("trayecto-mafe.csv")
 trayecto_cicla <- read.csv("cicla-jaider.csv")
+
 ```
 
 # Propuestas para identificar patrones
@@ -52,3 +53,148 @@ Vamos por ejemplo a tomar los datos de trayecto_mafe para separar
 
 -   **Gráficas visuales y reconocimiento visual de patrones**\
     Graficar las aceleraciones para cada medio de transporte y observar diferencias visuales en las formas de las curvas.
+
+# Analisis descriptivo y exploratorio
+
+```{r echo=FALSE}
+#| label: Grafico1
+#| message: false
+#| warning: false
+#| paged-print: false
+library(tidyverse)
+library(gridExtra)
+
+library(patchwork)
+
+```
+
+```{r}
+# Timestamp a grupo_tiempo
+comparacion_camilo <- comparacion_camilo |> 
+  mutate(grupo_tiempo = as.POSIXct(timestamp / 1000),
+         AccT = sqrt(AccX^2 + AccY^2 + AccZ^2))
+
+comparacion_jaider <- comparacion_jaider |> 
+  mutate(
+    grupo_tiempo = as.POSIXct(timestamp / 1000),
+    AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
+  )
+
+trayecto_mafe <- trayecto_mafe |> 
+  mutate(grupo_tiempo = as.POSIXct(timestamp / 1000),
+         AccT = sqrt(AccX^2 + AccY^2 + AccZ^2))
+
+trayecto_cicla <- trayecto_cicla |> 
+  mutate(grupo_tiempo = as.POSIXct(timestamp / 1000),
+         AccT = sqrt(AccX^2 + AccY^2 + AccZ^2))
+
+```
+
+```{r}
+#Agrupar tiempos en intervalos de 100 ms
+procesar_datos <- function(df) {
+  df %>%
+    mutate(
+      grupo_tiempo = as.POSIXct(timestamp / 1000, origin = "1970-01-01"),
+      grupo_tiempo = as.POSIXct(floor(as.numeric(grupo_tiempo) * 10) / 10, origin = "1970-01-01"),
+      AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
+    ) %>%
+    group_by(grupo_tiempo) %>%
+    summarize(
+      AccX = mean(AccX, na.rm = TRUE),
+      AccY = mean(AccY, na.rm = TRUE),
+      AccZ = mean(AccZ, na.rm = TRUE),
+      AccT = mean(AccT, na.rm = TRUE),
+      .groups = "drop"
+    )
+}
+
+comparacion_camilo <- procesar_datos(comparacion_camilo)
+comparacion_jaider <- procesar_datos(comparacion_jaider)
+trayecto_mafe <- procesar_datos(trayecto_mafe)
+trayecto_cicla <- procesar_datos(trayecto_cicla)
+```
+
+```{r}
+ggplot(comparacion_camilo, aes(grupo_tiempo, AccX)) +
+  geom_point(alpha = 0.3)+coord_cartesian(ylim = c(-10, 20))
+```
+
+## Graficos descriptivos mismo trayecto
+
+## Telefono 1
+
+```{r}
+gx <- ggplot(comparacion_jaider, aes(grupo_tiempo, AccX)) +
+  geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20))
+gy <- ggplot(comparacion_jaider, aes(grupo_tiempo, AccY)) +
+  geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20))
+gz <- ggplot(comparacion_jaider, aes(grupo_tiempo, AccZ)) +
+  geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20))
+
+gt <- ggplot(comparacion_jaider, aes(grupo_tiempo, AccT)) +
+  geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(0, 20))
+```
+
+```{r}
+((gx | gy) /( gz | gt))
+
+```
+
+### Telefono 2
+
+```{r}
+gx <- ggplot(comparacion_camilo, aes(grupo_tiempo, AccX)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20)) 
+
+gy <- ggplot(comparacion_camilo, aes(grupo_tiempo, AccY)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20)) 
+
+gz <- ggplot(comparacion_camilo, aes(grupo_tiempo, AccZ)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20)) 
+
+gt <- ggplot(comparacion_camilo, aes(grupo_tiempo, AccT)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(0, 20))
+```
+
+```{r}
+((gx | gy) /( gz | gt)) 
+```
+
+## Grafico individual 2 formas de movimiento
+
+```{r}
+gx <- ggplot(trayecto_cicla, aes(grupo_tiempo, AccX)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20)) 
+
+gy <- ggplot(trayecto_cicla, aes(grupo_tiempo, AccY)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20)) 
+
+gz <- ggplot(trayecto_cicla, aes(grupo_tiempo, AccZ)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20)) 
+
+gt <- ggplot(trayecto_cicla, aes(grupo_tiempo, AccT)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(0, 20))
+```
+
+```{r}
+((gx | gy) /( gz | gt)) 
+```
+
+## Varios medios de transporte
+
+```{r}
+gx <- ggplot(trayecto_mafe, aes(grupo_tiempo, AccX)) +
+  geom_line(alpha = 0.3) +
+  coord_cartesian(ylim = c(-10, 20))
+
+gy <- ggplot(trayecto_mafe, aes(grupo_tiempo, AccY)) +
+  geom_line(alpha = 0.3) +
+  coord_cartesian(ylim = c(-10, 20))
+
+gz <- ggplot(trayecto_mafe, aes(grupo_tiempo, AccZ)) +
+  geom_line(alpha = 0.3) +
+  coord_cartesian(ylim = c(-10, 20))
+
+gt <- ggplot(trayecto_mafe, aes(grupo_tiempo, AccT)) +
+  geom_line(alpha = 0.3) +
+  coord_cartesian(ylim = c(0, 20))
+
+```
+
+```{r}
+
+((gx | gy) /( gz | gt)) 
+```
