@@ -264,7 +264,7 @@ estadLineaO <- datosLineaO |> summarise(
   desviacion_T = sd(AccT, na.rm = TRUE)
 )
 # Ver resultado
-estadLineaO
+kable(estadLinesO, caption = "Estadísticas para el trayecto en Linea O")
 ```
 
 Datos Metro
@@ -284,7 +284,7 @@ estadMetro <- datosMetro |> summarise(
   desviacion_T = sd(AccT, na.rm = TRUE)
 )
 
-estadMetro
+kable(estadMetro, caption = "Estadísticas para el trayecto en Metro")
 ```
 
 Datos Bus
@@ -304,7 +304,7 @@ estadBus <- datosBus |> summarise(
   desviacion_T = sd(AccT, na.rm = TRUE)
 )
 
-estadBus
+kable(estadBus, caption = "Estadísticas para el trayecto en Bus")
 ```
 
 Datos Bicicleta
@@ -324,8 +324,18 @@ estadBici <- datosBici |> summarise(
   desviacion_T = sd(AccT, na.rm = TRUE) 
 )
 
-estadBici
+kable(estadBici, caption = "Estadísticas para el trayecto en Bicicleta")
 ```
+
+La **bicicleta** tiene la mayor desviación en la aceleración total (1.57), lo cual refleja una experiencia de movimiento menos uniforme: influencias como los pedaleos, el terreno, y el control manual generan esa variabilidad general, aunque sus movimientos por eje son relativamente estables.
+
+El **metro** muestra una alta variación en el eje Y (6.68), lo que puede deberse a cambios rápidos en dirección o velocidad, como frenadas o giros, aunque su aceleración total es muy estable (desviación de 0.53), indicando que esas variaciones no afectan el recorrido de forma global.
+
+El **bus** presenta una alta variabilidad también, especialmente en el eje Y (5.45) y Z (4.65), con una aceleración lateral negativa marcada (-4.46), posiblemente debido a curvas, baches o el tráfico urbano. Su aceleración total también es estable (0.53), pero con más fluctuación que la Línea O.
+
+La **Línea O** mantiene un patrón muy uniforme: sus desviaciones por eje y en la aceleración total (0.53) están entre las más bajas, lo que sugiere un trayecto controlado y estable. A pesar de tener aceleraciones más altas en los tres ejes, la variabilidad es menor, indicando un movimiento continuo y sin sobresaltos.
+
+
 ```{r}
 n_camilo <- nrow(comparacion_camilo)
 n_jaider <- nrow(comparacion_jaider)
