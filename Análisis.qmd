@@ -1,0 +1,26 @@
+---
+title: "Proyecto Arduino"
+author: "Juan Camilo Gutiérrez,
+        Maria Fernanda Calle,
+        Jaider Castañeda"
+format: 
+  pdf:
+    toc: true
+editor: visual
+execute:
+  echo: false
+---
+
+# Lectura de datos
+
+```{r}
+comparacion_camilo <- read.csv("comparacion-camilo.csv")
+comparacion_jaider <- read.csv("comparacion-jaider.csv")
+trayecto_mafe <- read.csv("trayecto-mafe.csv")
+trayecto_cicla <- read.csv("cicla-jaider.csv")
+```
+
+
+
+
+
