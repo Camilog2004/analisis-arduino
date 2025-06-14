@@ -96,7 +96,7 @@ procesar_datos <- function(df) {
   df %>%
     mutate(
       grupo_tiempo = as.POSIXct(timestamp / 1000, origin = "1970-01-01"),
-      grupo_tiempo = as.POSIXct(floor(as.numeric(grupo_tiempo) * 10) / 10, origin = "1970-01-01"),
+      grupo_tiempo = as.POSIXct(floor(as.numeric(grupo_tiempo) * 40) / 40, origin = "1970-01-01"),
       AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
     ) %>%
     group_by(grupo_tiempo) %>%
@@ -144,7 +144,7 @@ gt <- ggplot(comparacion_jaider, aes(grupo_tiempo, AccT)) +
 ### Telefono 2
 
 ```{r}
-gx <- ggplot(comparacion_camilo, aes(grupo_tiempo, AccX)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20)) 
+gx <- ggplot(comparacion_camilo, aes(grupo_tiempo, AccX)) +   geom_line(alpha = 0.3, )+coord_cartesian(ylim = c(-10, 20)) 
 
 gy <- ggplot(comparacion_camilo, aes(grupo_tiempo, AccY)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20)) 
 
@@ -198,3 +198,37 @@ gt <- ggplot(trayecto_mafe, aes(grupo_tiempo, AccT)) +
 
 ((gx | gy) /( gz | gt)) 
 ```
+
+# Analsis promedio de intervalo para los datos de los sensores
+
+```{r}
+#Recargamos las tablas
+comparacion_camilo <- read.csv("comparacion-camilo.csv")
+comparacion_jaider <- read.csv("comparacion-jaider.csv")
+trayecto_mafe <- read.csv("trayecto-mafe.csv")
+trayecto_cicla <- read.csv("cicla-jaider.csv")
+```
+
+```{r}
+#Funcion para calcular el promedio que tarda en tomar un dato el sensor
+promedio_diferencia_timestamp <- function(df) {
+  df %>%
+    arrange(timestamp) %>%                          # Ordenar por timestamp
+    mutate(diff_ms = c(NA, diff(timestamp))) %>%    # Diferencias entre consecutivos
+    summarize(promedio_diff = mean(diff_ms, na.rm = TRUE)) %>% # Promedio
+    pull(promedio_diff)                             # Extraer valor como número
+}
+```
+
+```{r}
+intervalos_mafe   <- diff(trayecto_mafe$timestamp)
+intervalos_jaider <- diff(comparacion_jaider$timestamp)
+intervalos_camilo <- diff(comparacion_camilo$timestamp)
+
+summary(intervalos_mafe)
+summary(intervalos_jaider)
+summary(intervalos_camilo)
+
+```
+
+Se analizaron los intervalos entre mediciones de los sensores utilizados por Mafe, Jaider y Camilo. El sensor de **Mafe** presentó la mayor frecuencia de muestreo, con una mediana de `11 ms` y una media de `~30 ms`, lo que indica una captura densa y estable. **Jaider** mostró una mediana de `20 ms` y media de `~45 ms`, con mayor variabilidad. En contraste, **Camilo** tuvo la menor frecuencia y mayor inestabilidad, con una mediana de `33 ms` y una media de `~85 ms`. Estas diferencias afectan la precisión temporal de los datos, siendo los de Mafe los más adecuados para detectar cambios rápidos en la aceleración.
