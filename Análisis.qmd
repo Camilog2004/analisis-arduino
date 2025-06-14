@@ -3,24 +3,52 @@ title: "Proyecto Arduino"
 author: "Juan Camilo Gutiérrez,
         Maria Fernanda Calle,
         Jaider Castañeda"
+date: last-modified
 format: 
   pdf:
     toc: true
 editor: visual
 execute:
   echo: false
+  warning: false
 ---
 
-# Lectura de datos
+# Datos
+
+Se realizaron cuatro mediciones de datos, cada una identificada con un nombre específico:
+
+-   **trayecto_mafe**: corresponde a un recorrido desde la Facultad de Minas hasta el municipio de Barbosa, en el cual se utilizó una combinación de medios de transporte: caminata, bus de la línea O del metro, metro y bus intermunicipal.
+
+-   **comparacion_camilo** y **comparacion_jaider**: ambos archivos registran el trayecto desde el Campus Volador hasta la Facultad de Minas, tomados con dos celulares diferentes para efectos comparativos.
+
+-   **trayecto_cicla**: corresponde a un recorrido en bicicleta desde el Campus Volador hasta la estación Estadio.
 
 ```{r}
+#Lectura de datos
 comparacion_camilo <- read.csv("comparacion-camilo.csv")
 comparacion_jaider <- read.csv("comparacion-jaider.csv")
 trayecto_mafe <- read.csv("trayecto-mafe.csv")
 trayecto_cicla <- read.csv("cicla-jaider.csv")
 ```
 
+# Propuestas para identificar patrones
 
+-   **Análisis de la varianza o desviación estándar**\
+    Se puede calcular la varianza o la desviación estándar de las aceleraciones en cada eje. Por ejemplo, la bicicleta puede tener una aceleración más variable debido a vibraciones constantes, mientras que el metro podría tener una aceleración más estable durante el trayecto.
 
+Vamos por ejemplo a tomar los datos de trayecto_mafe para separar
 
+-   **Frecuencia de los picos de aceleración**\
+    Contar cuántos "picos" (aceleraciones abruptas) hay en cierto intervalo de tiempo. Por ejemplo, en un autobús podrían haber más frenadas y aceleraciones bruscas que en el metro.
 
+-   **Ventanas de tiempo y características estadísticas**\
+    Dividir los datos en ventanas de tiempo (por ejemplo, de 5 segundos) y calcular características estadísticas dentro de cada ventana: media, mediana, máximos, mínimos, etc. Luego, comparar estas estadísticas entre archivos.
+
+-   **Magnitud de aceleración total**\
+    Calcular la magnitud total de aceleración con la fórmula: `√(AccX² + AccY² + AccZ²)` y analizar cómo varía con el tiempo. Esto puede dar una idea del nivel de movimiento general en cada transporte.
+
+-   **Uso de patrones de aceleración lineal**\
+    La aceleración lineal suele eliminar la componente de la gravedad, lo que permite identificar movimientos del transporte sin interferencia. Esto puede usarse para identificar frenadas o aceleraciones específicas.
+
+-   **Gráficas visuales y reconocimiento visual de patrones**\
+    Graficar las aceleraciones para cada medio de transporte y observar diferencias visuales en las formas de las curvas.
