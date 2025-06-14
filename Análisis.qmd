@@ -41,6 +41,7 @@ trayecto_cicla <- read.csv("cicla-jaider.csv")
 #| paged-print: false
 library(tidyverse)
 library(gridExtra)
+library(knitr)
 
 library(patchwork)
 
@@ -73,7 +74,6 @@ trayecto_cicla <- trayecto_cicla |>
 procesar_datos <- function(df) {
   df %>%
     mutate(
-      grupo_tiempo = as.POSIXct(timestamp / 1000, origin = "1970-01-01"),
       grupo_tiempo = as.POSIXct(floor(as.numeric(grupo_tiempo) * 40) / 40, origin = "1970-01-01"),
       AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
     ) %>%
@@ -181,10 +181,9 @@ gt <- ggplot(trayecto_mafe, aes(grupo_tiempo, AccT)) +
 
 ```{r}
 #Recargamos las tablas
-comparacion_camilo <- read.csv("comparacion-camilo.csv")
-comparacion_jaider <- read.csv("comparacion-jaider.csv")
-trayecto_mafe <- read.csv("trayecto-mafe.csv")
-trayecto_cicla <- read.csv("cicla-jaider.csv")
+comparacion_camilo1 <- read.csv("comparacion-camilo.csv")
+comparacion_jaider1 <- read.csv("comparacion-jaider.csv")
+trayecto_mafe1 <- read.csv("trayecto-mafe.csv")
 ```
 
 ```{r}
@@ -199,9 +198,9 @@ promedio_diferencia_timestamp <- function(df) {
 ```
 
 ```{r}
-intervalos_mafe   <- diff(trayecto_mafe$timestamp)
-intervalos_jaider <- diff(comparacion_jaider$timestamp)
-intervalos_camilo <- diff(comparacion_camilo$timestamp)
+intervalos_mafe   <- diff(trayecto_mafe1$timestamp)
+intervalos_jaider <- diff(comparacion_jaider1$timestamp)
+intervalos_camilo <- diff(comparacion_camilo1$timestamp)
 
 summary(intervalos_mafe)
 summary(intervalos_jaider)
@@ -209,8 +208,7 @@ summary(intervalos_camilo)
 
 ```
 
-Se analizaron los intervalos entre mediciones de los sensores utilizados por Mafe, Jaider y Camilo. El sensor de **Mafe** presentó la mayor frecuencia de muestreo, con una mediana de `11 ms` y una media de `~30 ms`, lo que indica una captura densa y estable. **Jaider** mostró una mediana de `20 ms` y media de `~45 ms`, con mayor variabilidad. En contraste, **Camilo** tuvo la menor frecuencia y mayor inestabilidad, con una mediana de `33 ms` y una media de `~85 ms`. Estas diferencias afectan la precisión temporal de los datos, siendo los de Mafe los más adecuados para detectar cambios rápidos en la aceleración.
-# Propuestas para identificar patrones
+Se analizaron los intervalos entre mediciones de los sensores utilizados por Mafe, Jaider y Camilo. El sensor de **Mafe** presentó la mayor frecuencia de muestreo, con una mediana de `11 ms` y una media de `~30 ms`, lo que indica una captura densa y estable. **Jaider** mostró una mediana de `20 ms` y media de `~45 ms`, con mayor variabilidad. En contraste, **Camilo** tuvo la menor frecuencia y mayor inestabilidad, con una mediana de `33 ms` y una media de `~85 ms`. Estas diferencias afectan la precisión temporal de los datos, siendo los de Mafe los más adecuados para detectar cambios rápidos en la aceleración. \# Propuestas para identificar patrones
 
 -   **Análisis de la varianza o desviación estándar**\
     Se puede calcular la varianza o la desviación estándar de las aceleraciones en cada eje. Por ejemplo, la bicicleta puede tener una aceleración más variable debido a vibraciones constantes, mientras que el metro podría tener una aceleración más estable durante el trayecto.
@@ -264,7 +262,7 @@ estadLineaO <- datosLineaO |> summarise(
   desviacion_T = sd(AccT, na.rm = TRUE)
 )
 # Ver resultado
-kable(estadLinesO, caption = "Estadísticas para el trayecto en Linea O")
+kable(estadLineaO, caption = "Estadísticas para el trayecto en Linea O")
 ```
 
 Datos Metro
@@ -335,7 +333,6 @@ El **bus** presenta una alta variabilidad también, especialmente en el eje Y (5
 
 La **Línea O** mantiene un patrón muy uniforme: sus desviaciones por eje y en la aceleración total (0.53) están entre las más bajas, lo que sugiere un trayecto controlado y estable. A pesar de tener aceleraciones más altas en los tres ejes, la variabilidad es menor, indicando un movimiento continuo y sin sobresaltos.
 
-
 ```{r}
 n_camilo <- nrow(comparacion_camilo)
 n_jaider <- nrow(comparacion_jaider)
@@ -343,13 +340,9 @@ n_jaider <- nrow(comparacion_jaider)
 
 # Patrones observados en datos tomados al mismo tiempo
 
-En el trayecto se registro datos desde la sede volador hasta la sede minas, 
-tomando el medio de transporte intercampus de la universidad, y el tiempo
-para asistir a clase de 10:00 AM en minas (caminando, y tomando el ascensor), 
-con dos celulares distintos.
+En el trayecto se registro datos desde la sede volador hasta la sede minas, tomando el medio de transporte intercampus de la universidad, y el tiempo para asistir a clase de 10:00 AM en minas (caminando, y tomando el ascensor), con dos celulares distintos.
 
-Vamos a ver el total de observaciones luego de la agrupación por tiempo de los
-datos.
+Vamos a ver el total de observaciones luego de la agrupación por tiempo de los datos.
 
 Para el teléfono 1 se tienen:
 
@@ -362,31 +355,30 @@ Para el teléfono 2 se tienen:
 ```{r}
 n_camilo
 ```
- Lo primero que podemos ver es que el télefono 1 tomó más datos en la misma 
- cantidad de tiempo comparado con el télefono 2.
- 
- Ahora vamos a comparar las dos gráficas:
- 
+
+Lo primero que podemos ver es que el télefono 1 tomó más datos en la misma cantidad de tiempo comparado con el télefono 2.
+
+Ahora vamos a comparar las dos gráficas:
+
 ```{r}
 gx1 <- ggplot(comparacion_jaider, aes(grupo_tiempo, AccX)) +
   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20))
 ```
- 
+
 ```{r}
 gx2 <- ggplot(comparacion_camilo, aes(grupo_tiempo, AccX)) +   geom_point(alpha = 0.3, size = 0.5)+coord_cartesian(ylim = c(-10, 20))
 ```
 
- 
 ```{r}
 (gx1 | gx2)
 ```
- Como se puede ver, los valores no son muy idénticos, pero se pueden ver
- algunos intervalos de segmentación y van a ser tres:
- 
- - Desde el inicio hasta las 10:00 am
- - Desde las 10:00 am hasta las 10:15.
- - Desde las 10:15 am hasta el final.
- 
+
+Como se puede ver, los valores no son muy idénticos, pero se pueden ver algunos intervalos de segmentación y van a ser tres:
+
+-   Desde el inicio hasta las 10:00 am
+-   Desde las 10:00 am hasta las 10:15.
+-   Desde las 10:15 am hasta el final.
+
 ```{r}
 comparacion_camilo_mod <- comparacion_camilo %>%
   mutate(hora = hour(grupo_tiempo) + minute(grupo_tiempo) / 60)
@@ -394,7 +386,7 @@ comparacion_camilo_mod <- comparacion_camilo %>%
 comparacion_jaider_mod <- comparacion_jaider %>%
   mutate(hora = hour(grupo_tiempo) + minute(grupo_tiempo) / 60)
 ```
- 
+
 ```{r}
 # Segmentos para CAMILO
 camilo_antes_10 <- comparacion_camilo_mod %>% filter(hora < 10)
@@ -407,9 +399,9 @@ jaider_10_a_1015 <- comparacion_jaider_mod %>% filter(hora >= 10 & hora < 10.25)
 jaider_despues_1015 <- comparacion_jaider_mod %>% filter(hora >= 10.25)
 
 ```
- 
+
 Para el teléfono 1:
- 
+
 ```{r}
 # JAIDER
 summary(jaider_antes_10$AccX)
@@ -417,10 +409,7 @@ summary(jaider_10_a_1015$AccX)
 summary(jaider_despues_1015$AccX)
 ```
 
-Para el trayecto 1 la media es de 2.595 en el eje x.
-Para el trayecto 2 la media es de 0.026 en el eje x.
-Para el trayecto 3 la media es de -0.00918 en el eje x.
-
+Para el trayecto 1 la media es de 2.595 en el eje x. Para el trayecto 2 la media es de 0.026 en el eje x. Para el trayecto 3 la media es de -0.00918 en el eje x.
 
 Para el teléfono 2:
 
@@ -431,13 +420,20 @@ summary(camilo_10_a_1015$AccX)
 summary(camilo_despues_1015$AccX)
 ```
 
-Para el trayecto 1 la media es de 0.3018 en el eje x.
-Para el trayecto 2 la media es de 0.0323 en el eje x.
-Para el trayecto 3 la media es de -0.6257 en el eje x.
+Para el trayecto 1 la media es de 0.3018 en el eje x. Para el trayecto 2 la media es de 0.0323 en el eje x. Para el trayecto 3 la media es de -0.6257 en el eje x.
 
+Comparando se observa que los valores no son iguales en los dos teléfonos, pero si la tendencia se comporta muy similar, casualmente el primer tramo es el trayecto en bus de intercampus, y es donde se obtiene el valor máximo, además el valor máximo más pequeño se obtiene en último trayecto que coincide con el momento en que los dos estudiantes estaban sentados ya en clase.
 
-Comparando se observa que los valores no son iguales en los dos teléfonos, pero
-si la tendencia se comporta muy similar, casualmente el primer tramo es el 
-trayecto en bus de intercampus, y es donde se obtiene el valor máximo, además
-el valor máximo más pequeño se obtiene en último trayecto que coincide
-con el momento en que los dos estudiantes estaban sentados ya en clase.
+# Conclusiones
+
+Al analizar los datos de aceleración recogidos desde distintos celulares, nos dimos cuenta de que hay diferencias importantes tanto en cómo se capturan los datos como en los patrones de movimiento que se generan según el medio de transporte.
+
+Vimos que los sensores no son iguales: algunos son más precisos y miden con más frecuencia que otros, lo que afecta directamente qué tan buenos son los datos que obtenemos. Por ejemplo, el celular que usó Mafe resultó ser el más estable, ya que registró datos de forma más continua y con intervalos regulares, lo que ayudó bastante a identificar mejor los patrones de movimiento.
+
+También descubrimos, gracias al análisis exploratorio y descriptivo, que es posible distinguir entre diferentes medios de transporte solo observando cómo varía la aceleración total y sus componentes. Por ejemplo, en bici se notan más cambios bruscos y picos de aceleración, mientras que en el metro los trayectos son mucho más estables. Estas diferencias permiten usar estadísticas como el promedio, la desviación estándar o la cantidad de picos como indicadores para entender mejor el tipo de movimiento.
+
+Este trabajo es un primer paso para desarrollar herramientas que puedan identificar automáticamente el medio de transporte solo con los datos de los sensores del celular. Esto puede ser muy útil en temas de movilidad urbana, seguimiento de rutas o incluso para estudiar cómo se mueven los usuarios.
+
+# Cibergrafía:
+
+OpenAI. (2025). ChatGPT \[Modelo de lenguaje AI\]. Recuperado de <https://chat.openai.com>
