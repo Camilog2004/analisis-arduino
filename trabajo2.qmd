@@ -4,13 +4,34 @@ format: html
 ---
 
 ```{r}
-bus <- read.csv("bus1.csv")
-caminar <- read.csv("caminar1.csv")
-cicla <- read.csv("cicla1.csv")
-linea_o <- read.csv("lineaO1.csv")
-metro1 <- read.csv("metro1.csv")
-metro2 <- read.csv("metro2.csv")
-metro3 <- read.csv("metro3.csv")
-metro4 <- read.csv("metro4.csv")
+bus <- read.csv("ENTRENAMIENTO/bus1.csv")
+caminar <- read.csv("ENTRENAMIENTO/caminar1.csv")
+cicla <- read.csv("ENTRENAMIENTO/cicla1.csv")
+linea_o <- read.csv("ENTRENAMIENTO/lineaO1.csv")
+metro1 <- read.csv("ENTRENAMIENTO/metro1.csv")
+metro2 <- read.csv("ENTRENAMIENTO/metro2.csv")
+metro3 <- read.csv("ENTRENAMIENTO/metro3.csv")
+metro4 <- read.csv("ENTRENAMIENTO/metro4.csv")
 
+```
+
+```{r}
+verificacación <- read.csv("VERIFICACIÓN/verificacion.csv")
+```
+
+ 
+
+```{r}
+library(tidyverse)
+library(gridExtra)
+library(knitr)
+library(patchwork)
+```
+
+```{r}
+summary(metro2)
+```
+
+```{r}
+metro2 |> mutate(AccT = sqrt(AccX^2 + AccY^2 + AccZ^2))
 ```
