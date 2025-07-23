@@ -17,6 +17,7 @@ metro4 <- read.csv("ENTRENAMIENTO/metro4.csv")
 
 ```{r}
 verificacación <- read.csv("VERIFICACIÓN/verificacion.csv")
+linea_o
 ```
 
  
@@ -33,5 +34,102 @@ summary(metro2)
 ```
 
 ```{r}
-metro2 |> mutate(AccT = sqrt(AccX^2 + AccY^2 + AccZ^2))
+bus <- bus |>
+  mutate(
+    grupo_tiempo = as.POSIXct(timestamp / 1000, origin = "1970-01-01", tz = "UTC"),
+    AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
+  )
+
+metro1 <- metro1 |>
+  mutate(
+    grupo_tiempo = as.POSIXct(timestamp / 1000, origin = "1970-01-01", tz = "UTC"),
+    AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
+  )
+
+
+caminar <- caminar |>
+  mutate(
+    grupo_tiempo = as.POSIXct(timestamp / 1000, origin = "1970-01-01", tz = "UTC"),
+    AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
+  )
+
+verificacación <- verificacación |>
+  mutate(
+    grupo_tiempo = as.POSIXct(timestamp / 1000, origin = "1970-01-01", tz = "UTC"),
+    AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
+  )
+
+linea_o <- linea_o |>
+  mutate(
+    AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
+  )
+
+```
+
+\
+
+\
+
+```{r}
+library(e1071)
+```
+
+```{r}
+procesar_datos <- function(df) {
+  df %>%
+    # Eliminar filas donde AccX, AccY y AccZ son todos NA
+    filter(!(is.na(AccX) & is.na(AccY) & is.na(AccZ))) %>%
+    
+    mutate(
+      grupo_tiempo = as.POSIXct(floor(as.numeric(grupo_tiempo) * 40) / 40, origin = "1970-01-01"),
+      AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
+    ) %>%
+    
+    group_by(grupo_tiempo) %>%
+    summarize(
+      AccX = mean(AccX, na.rm = TRUE),
+      AccY = mean(AccY, na.rm = TRUE),
+      AccZ = mean(AccZ, na.rm = TRUE),
+      AccT = mean(AccT, na.rm = TRUE),
+      .groups = "drop"
+    )
+}
+```
+
+```{r}
+bus <- procesar_datos(bus)
+
+metro1<- procesar_datos(metro1)
+
+caminar <-procesar_datos(caminar)
+
+verificacación <-procesar_datos(verificacación)
+
+#linea_o <- procesar_datos(linea_o)
+```
+
+```{r}
+#| warning: false
+ggplot(metro1, aes(grupo_tiempo, AccT)) +
+  geom_point(alpha = 0.3)+coord_cartesian(ylim = c(-10, 20))
+```
+
+```{r}
+ggplot(bus, aes(grupo_tiempo, AccT)) +
+  geom_point(alpha = 0.3)+coord_cartesian(ylim = c(-10, 20))
+```
+
+```{r}
+ggplot(caminar, aes(grupo_tiempo, AccT)) +
+  geom_point(alpha = 0.3)+coord_cartesian(ylim = c(-10, 20))
+```
+
+```{r}
+ggplot(verificacación, aes(grupo_tiempo, AccT)) +
+  geom_point(alpha = 0.3)+coord_cartesian(ylim = c(-10, 20))
+```
+
+```{r}
+ggplot(linea_o, aes(timestamp, AccT)) +
+  geom_point(alpha = 0.3)+coord_cartesian(ylim = c(-10, 20))
 ```
