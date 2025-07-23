@@ -208,7 +208,7 @@ summary(intervalos_camilo)
 
 ```
 
-Se analizaron los intervalos entre mediciones de los sensores utilizados por Mafe, Jaider y Camilo. El sensor de **Mafe** presentó la mayor frecuencia de muestreo, con una mediana de `11 ms` y una media de `~30 ms`, lo que indica una captura densa y estable. **Jaider** mostró una mediana de `20 ms` y media de `~45 ms`, con mayor variabilidad. En contraste, **Camilo** tuvo la menor frecuencia y mayor inestabilidad, con una mediana de `33 ms` y una media de `~85 ms`. Estas diferencias afectan la precisión temporal de los datos, siendo los de Mafe los más adecuados para detectar cambios rápidos en la aceleración. \
+Se analizaron los intervalos entre mediciones de los sensores utilizados por Mafe, Jaider y Camilo. El sensor de **Mafe** presentó la mayor frecuencia de muestreo, con una mediana de `11 ms` y una media de `~30 ms`, lo que indica una captura densa y estable. **Jaider** mostró una mediana de `20 ms` y media de `~45 ms`, con mayor variabilidad. En contraste, **Camilo** tuvo la menor frecuencia y mayor inestabilidad, con una mediana de `33 ms` y una media de `~85 ms`. Estas diferencias afectan la precisión temporal de los datos, siendo los de Mafe los más adecuados para detectar cambios rápidos en la aceleración.\
 
 # Propuestas para identificar patrones
 
