@@ -78,7 +78,7 @@ library(e1071)
 procesar_datos <- function(df) {
   df %>%
     # Eliminar filas donde AccX, AccY y AccZ son todos NA
-    filter(!(is.na(AccX) & is.na(AccY) & is.na(AccZ))) %>%
+    filter((!(is.na(AccX) & is.na(AccY) & is.na(AccZ))) | (!is.na(AccT))) %>%
     
     mutate(
       grupo_tiempo = as.POSIXct(floor(as.numeric(grupo_tiempo) * 40) / 40, origin = "1970-01-01"),
@@ -133,3 +133,154 @@ ggplot(verificacación, aes(grupo_tiempo, AccT)) +
 ggplot(linea_o, aes(timestamp, AccT)) +
   geom_point(alpha = 0.3)+coord_cartesian(ylim = c(-10, 20))
 ```
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Paso 1: Calcular la diferencia absoluta de AccT
+verificacación <- verificacación %>%
+  arrange(grupo_tiempo) %>%
+  filter(!is.na(AccT)) %>%
+  mutate(
+    diff_acc = c(0, abs(diff(AccT)))
+  )
+
+# Resumen de las diferencias
+summary(verificacación$diff_acc)
+
+# Paso 2: Graficar diferencias
+ggplot(verificacación, aes(grupo_tiempo, diff_acc)) +
+  geom_line(color = "steelblue") +
+  geom_point(color = "red", size = 0.4) +
+  labs(
+    title = "Diferencias en la aceleración total (AccT)",
+    x = "Tiempo",
+    y = "Diferencia absoluta de AccT"
+  ) +
+  theme_minimal()
+
+# Paso 3: Marcar cambios bruscos (posibles separaciones de trayecto)
+threshold <- 20
+
+ggplot(verificacación, aes(x = grupo_tiempo, y = diff_acc)) +
+  geom_line(color = "blue", alpha = 0.4) +
+  geom_point(
+    data = subset(verificacación, diff_acc > threshold),
+    aes(x = grupo_tiempo, y = diff_acc),
+    color = "red", size = 1.5
+  ) +
+  labs(
+    title = "Picos en la diferencia de AccT (posibles cambios de trayecto)",
+    x = "Tiempo", y = "Diferencia absoluta de AccT"
+  ) +
+  theme_minimal()
+
+# Obtener índices donde hay picos
+picos <- which(verificacación$diff_acc > threshold)
+
+# Calcular diferencias entre índices consecutivos
+diferencias <- diff(picos)
+
+# Umbral para separar trayectos (ajustable)
+umbral_separacion <- 20
+
+# Contar cuántas veces la diferencia entre picos consecutivos supera el umbral
+cambios_reales <- sum(diferencias > umbral_separacion) + 1  # +1 porque el primero también cuenta
+
+tiempos_picos <- verificacación$grupo_tiempo[picos]
+
+# Calcular diferencias entre tiempos (puede ser por índice o por tiempo real)
+diferencias_tiempo <- diff(tiempos_picos)
+
+# Obtener las posiciones donde ocurre un salto mayor al umbral
+posiciones_cambios <- which(diferencias_tiempo > umbral_separacion)
+
+# Extraer los tiempos donde hay cambio real
+tiempos_cambios_reales <- tiempos_picos[c(1, posiciones_cambios + 1)]  # +1 porque diff reduce en 1 la longitud
+
+# Mostrar los tiempos
+cat("Tiempos donde ocurren los cambios de trayecto:\n")
+print(tiempos_cambios_reales)
+
+
+```
+```{r}
+puntos_corte <- c(
+  min(verificacación$grupo_tiempo),
+  tiempos_cambios_reales,
+  as.POSIXct("2025-06-05 19:50:00"),  # 🔹 Nuevo punto de corte manual
+  max(verificacación$grupo_tiempo)
+)
+
+# Crear una lista para guardar cada fragmento
+fragmentos <- list()
+
+# Loop para separar por rangos de tiempo
+for (i in 1:(length(puntos_corte) - 1)) {
+  fragmentos[[i]] <- verificacación %>%
+    filter(grupo_tiempo >= puntos_corte[i] & grupo_tiempo < puntos_corte[i + 1])
+}
+
+
+fragmentos[["trayecto_manual"]] <- verificacación %>%
+  filter(grupo_tiempo >= as.POSIXct("2025-06-05 18:53:00") & 
+         grupo_tiempo <= as.POSIXct("2025-06-05 19:47:00"))
+
+
+# Nombrar cada fragmento de forma clara
+names(fragmentos) <- paste0("trayecto_", seq_along(fragmentos))
+
+# Mostrar cuántos fragmentos se crearon
+cat("Fragmentos creados:", length(fragmentos), "\n")
+print(names(fragmentos))
+
+```
+
+```{r}
+
+for (i in seq_along(fragmentos)) {
+  print(
+    ggplot(fragmentos[[i]], aes(grupo_tiempo, AccT)) +
+      geom_point(alpha = 0.3) +
+      coord_cartesian(ylim = c(-10, 20)) +
+      labs(title = paste("Trayecto", i), y = "AccT", x = "Tiempo") +
+      theme_minimal()
+  )
+}
+
+```
+
+```{r}
+library(e1071)  # para la función kurtosis
+
+# Crear tabla con estadísticas para cada trayecto
+resumen_trayectos <- data.frame(
+  Trayecto = integer(),
+  Media = numeric(),
+  Varianza = numeric(),
+  Curtosis = numeric()
+)
+
+# Excluir trayectos 3, 4, 5 y 7
+indices_validos <- setdiff(seq_along(fragmentos), c(3, 4, 5, 7))
+
+for (i in indices_validos) {
+  datos <- fragmentos[[i]]$AccT
+  resumen_trayectos <- rbind(
+    resumen_trayectos,
+    data.frame(
+      Trayecto = i,
+      Media = mean(datos, na.rm = TRUE),
+      Varianza = var(datos, na.rm = TRUE),
+      Curtosis = kurtosis(datos, na.rm = TRUE)
+    )
+  )
+}
+
+print(resumen_trayectos)
+
+```
+
+
