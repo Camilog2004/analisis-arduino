@@ -59,6 +59,12 @@ verificacación <- verificacación |>
     AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
   )
 
+cicla <- cicla |>
+  mutate(
+    grupo_tiempo = as.POSIXct(timestamp / 1000, origin = "1970-01-01", tz = "UTC"),
+    AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
+  )
+
 linea_o <- linea_o |>
   mutate(
     AccT = sqrt(AccX^2 + AccY^2 + AccZ^2)
@@ -71,7 +77,7 @@ linea_o <- linea_o |>
 \
 
 ```{r}
-library(e1071)
+
 ```
 
 ```{r}
@@ -105,6 +111,7 @@ caminar <-procesar_datos(caminar)
 
 verificacación <-procesar_datos(verificacación)
 
+cicla <- procesar_datos(cicla)
 #linea_o <- procesar_datos(linea_o)
 ```
 
@@ -133,6 +140,88 @@ ggplot(verificacación, aes(grupo_tiempo, AccT)) +
 ggplot(linea_o, aes(timestamp, AccT)) +
   geom_point(alpha = 0.3)+coord_cartesian(ylim = c(-10, 20))
 ```
+
+```{r}
+ggplot(cicla, aes(grupo_tiempo, AccT)) +
+  geom_point(alpha = 0.3)+coord_cartesian(ylim = c(-10, 20))
+```
+
+\
+
+```{r}
+library(e1071)
+```
+
+```{r}
+curtosis <- kurtosis(linea_o$AccT, type = 2, na.rm = TRUE)
+
+```
+
+```{r}
+hist(linea_o$AccT, breaks = 50)
+boxplot(linea_o$AccT)
+```
+
+```{r}
+ggplot(linea_o, aes(x = AccT)) +
+  geom_histogram(bins = 50, fill = "steelblue", color = "black", na.rm = TRUE) +
+  labs(title = "Histograma de AccT", x = "AccT", y = "Frecuencia") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(bus, aes(x = AccT)) +
+  geom_histogram(bins = 50, fill = "steelblue", color = "black", na.rm = TRUE) +
+  labs(title = "Histograma de AccT", x = "AccT", y = "Frecuencia") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(metro1, aes(x = AccT)) +
+  geom_histogram(bins = 50, fill = "steelblue", color = "black", na.rm = TRUE) +
+  labs(title = "Histograma de AccT", x = "AccT", y = "Frecuencia") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(cicla, aes(x = AccT)) +
+  geom_histogram(bins = 50, fill = "steelblue", color = "black", na.rm = TRUE) +
+  labs(title = "Histograma de AccT", x = "AccT", y = "Frecuencia") +
+  theme_minimal()
+```
+
+```{r}
+library(dplyr)
+library(e1071)  # Para kurtosis
+
+resumen_estadisticas <- function(df, nombre) {
+  df %>%
+    summarise(
+      Actividad = nombre,
+      Media = mean(AccT, na.rm = TRUE),
+      Varianza = var(AccT, na.rm = TRUE),
+      Curtosis = kurtosis(AccT, type = 2, na.rm = TRUE)
+    )
+}
+
+```
+
+```{r}
+# Suponiendo que ya tienes estas bases cargadas y procesadas con AccT:
+res_bus <- resumen_estadisticas(bus, "Bus")
+res_metro <- resumen_estadisticas(metro1, "Metro")
+res_linea <- resumen_estadisticas(linea_o, "Linea O")
+res_cicla <- resumen_estadisticas(cicla, "Cicla")
+res_caminar <- resumen_estadisticas(caminar, "Caminar")
+
+```
+
+```{r}
+tabla_final <- bind_rows(res_bus, res_metro, res_linea, res_cicla, res_caminar)
+print(tabla_final)
+```
+
+
 
 
 ```{r}
@@ -263,7 +352,6 @@ resumen_trayectos <- data.frame(
   Curtosis = numeric()
 )
 
-# Excluir trayectos 3, 4, 5 y 7
 indices_validos <- setdiff(seq_along(fragmentos), c(3, 4, 5, 7))
 
 for (i in indices_validos) {
@@ -282,5 +370,3 @@ for (i in indices_validos) {
 print(resumen_trayectos)
 
 ```
-
-
